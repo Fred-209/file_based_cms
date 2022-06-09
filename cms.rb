@@ -5,19 +5,32 @@ require "tilt/erubis"
 
 root = File.expand_path("..", __FILE__)
 
-get "/" do 
+configure do 
+  enable :sessions
+end
+
+before do 
   @files = Dir.glob(root + "/data/*").map do |file| 
     File.basename(file)
   end
-  
+end
+
+get "/" do 
+    
   erb :index, layout: :layout
 end
 
 get "/:filename" do 
 
   @file_name = params[:filename]
-  @file = File.read(root + "/data/" + @file_name)
-  
-  headers['Content-Type'] = 'text/plain'
-  @file
+
+  if @files.include?(@file_name)
+    @file = File.read(root + "/data/" + @file_name)
+    headers['Content-Type'] = 'text/plain'
+    @file
+  else 
+    session[:error] = "#{@file_name} does not exist."
+    erb :index, layout: :layout
+    # redirect "/"
+  end
 end

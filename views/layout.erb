@@ -2,6 +2,9 @@
 <html>
   <head></head>
   <body>
+    <% if session[:error] %>
+      <p><%= session[:error] %></p>
+    <% end %>
     <%= yield %>
   </body>
 </html>

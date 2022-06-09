@@ -32,4 +32,10 @@ class CmsAppTest < Minitest::Test
     assert_equal "text/plain", last_response["Content-Type"]
     assert_includes body, "2003 - Ruby 1.8 released."
   end
+
+  def non_existing_document
+    get "/non_existing_doc.txt"
+
+    assert_equal 302, last_response.status
+  end
 end
