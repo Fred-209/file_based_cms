@@ -7,6 +7,7 @@ root = File.expand_path("..", __FILE__)
 
 configure do 
   enable :sessions
+  set :session_secret, "secret"
 end
 
 before do 
@@ -23,14 +24,13 @@ end
 get "/:filename" do 
 
   @file_name = params[:filename]
+  file_path = root + "/data/" + @file_name
 
-  if @files.include?(@file_name)
-    @file = File.read(root + "/data/" + @file_name)
+  if File.file?(file_path)
     headers['Content-Type'] = 'text/plain'
-    @file
+    @file = File.read(file_path) 
   else 
-    session[:error] = "#{@file_name} does not exist."
-    erb :index, layout: :layout
-    # redirect "/"
+    session[:message] = "#{@file_name} does not exist."
+    redirect "/"
   end
 end

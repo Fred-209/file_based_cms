@@ -2,8 +2,8 @@
 <html>
   <head></head>
   <body>
-    <% if session[:error] %>
-      <p><%= session[:error] %></p>
+    <% if session[:message] %>
+      <p><%= session.delete(:message) %></p>
     <% end %>
     <%= yield %>
   </body>

@@ -33,9 +33,18 @@ class CmsAppTest < Minitest::Test
     assert_includes body, "2003 - Ruby 1.8 released."
   end
 
-  def non_existing_document
+  def test_non_existing_document
     get "/non_existing_doc.txt"
 
     assert_equal 302, last_response.status
+    
+    get last_response["Location"]
+
+    assert_equal 200, last_response.status
+    assert_includes last_response.body, "non_existing_doc.txt does not exist."
+  
+    get "/"
+
+    refute_includes last_response.body, "non_existing_doc.txt does not exist."
   end
 end
