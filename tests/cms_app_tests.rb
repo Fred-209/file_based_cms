@@ -21,7 +21,7 @@ class CmsAppTest < Minitest::Test
     assert_equal "text/html;charset=utf-8", last_response["Content-Type"]
     assert_includes response_body, 'history.txt'
     assert_includes response_body, 'changes.txt'
-    assert_includes response_body, 'about.txt'
+    assert_includes response_body, 'about.md'
   end
 
   def test_page_content
@@ -46,5 +46,13 @@ class CmsAppTest < Minitest::Test
     get "/"
 
     refute_includes last_response.body, "non_existing_doc.txt does not exist."
+  end
+
+  def test_render_markdown
+    get "/about.md"
+
+    assert_equal 200, last_response.status
+    assert_equal "text/html;charset=utf-8", last_response['Content-Type']
+    assert_includes last_response.body, "<h1>Ruby is...</h1>"
   end
 end
