@@ -22,11 +22,11 @@ class CmsAppTest < Minitest::Test
     FileUtils.rm_rf(data_path)
   end
 
-  def create_document(name, content = "")
-    File.open(File.join(data_path, name), "w") do |file|
-      file.write(content)
-    end
-  end
+  # def create_document(name, content = "")
+  #   File.open(File.join(data_path, name), "w") do |file|
+  #     file.write(content)
+  #   end
+  # end
 
   def test_index
 
@@ -42,6 +42,7 @@ class CmsAppTest < Minitest::Test
     assert_includes response_body, "history.txt/edit"
     assert_includes response_body, 'changes.txt/edit'
     assert_includes response_body, 'about.md/edit'
+    assert_includes response_body, 'New Document'
   end
 
   def test_page_content
@@ -104,5 +105,46 @@ class CmsAppTest < Minitest::Test
 
     assert_equal 200, last_response.status
     assert_includes last_response.body, "new content"
+  end
+
+  def test_create_document_form
+    get "/new"
+
+    assert_equal 200, last_response.status
+    assert_includes last_response.body, "<input"
+    assert_includes last_response.body, 'Add a new document'
+  end
+
+  def test_submit_new_document
+    post "/create", filename: 'some_new_file.txt'
+
+    assert_equal 302, last_response.status
+    
+    get last_response['Location']
+
+    assert_includes last_response.body, 'some_new_file.txt'
+    
+  end
+
+  def test_submit_invalid_document_name
+    post "create", filename: ''
+
+    assert_equal 422, last_response.status
+    assert_includes last_response.body, "A name is required."
+  end
+
+  def test_delete_file
+    create_document("some_document.txt")
+
+    post "/some_document.txt/delete"
+
+    assert_equal 302, last_response.status
+
+    get last_response["Location"]
+    assert_includes last_response.body, "some_document.txt was deleted"
+
+    get "/"
+
+    refute_includes last_response.body, "some_document.txt"
   end
 end
