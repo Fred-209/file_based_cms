@@ -40,12 +40,13 @@ before do
   end
 end
 
-
+# Index page
 get "/" do 
     
   erb :index, layout: :layout
 end
 
+# Show contents of file
 get "/:filename" do 
 
   @file_name = params[:filename]
@@ -53,16 +54,26 @@ get "/:filename" do
 
   if File.file?(file_path)
     load_file_content(file_path)
-    # @file = File.read(file_path)
-
-    # if @file_name.end_with?('.md')
-    #   render_markdown(@file)
-    # else 
-    #   headers['Content-Type'] = 'text/plain'
-    #   @file
-    # end
   else 
     session[:message] = "#{@file_name} does not exist."
     redirect "/"
   end
+end
+
+ # Edit a file
+get "/:filename/edit" do
+  @file_name = params[:filename]
+  @file_path = root + "/data/" + @file_name
+  @content =File.read(@file_path)
+  
+
+  erb :edit_file, layout: :layout
+end
+
+post "/:filename" do 
+  file_path = root + "/data/" + params[:filename]
+  File.write(file_path, params[:content])
+
+  session[:message] = "#{params[:filename]} has been updated."
+  redirect "/"
 end
