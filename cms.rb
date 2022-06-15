@@ -3,7 +3,6 @@ require "sinatra/reloader" if development?
 require "sinatra/content_for"
 require "tilt/erubis"
 require "redcarpet"
-require "fileutils"
 
 root = File.expand_path("..", __FILE__)
 
@@ -118,7 +117,7 @@ end
 # Delete a file
 post "/:filename/delete" do 
   file_name = File.join(data_path, params[:filename])
-  FileUtils.rm_rf(file_name)
+  File.delete(file_name)
   
   session[:message] = "#{File.basename(file_name)} was deleted."
   redirect "/"
