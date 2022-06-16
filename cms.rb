@@ -49,6 +49,20 @@ def valid_file_name?(file_name)
   file_name.length > 0
 end
 
+def signed_in?
+  session[:signed_in]
+end
+
+def valid_user?(username, password)
+  username.downcase == "admin" && password == "secret"
+end
+
+def sign_user_out
+  session.delete('username')
+  session.delete('password')
+  session[:signed_in] = false
+end
+
 # Index page
 get "/" do 
   pattern = File.join(data_path, "*")
@@ -120,6 +134,36 @@ post "/:filename/delete" do
   File.delete(file_name)
   
   session[:message] = "#{File.basename(file_name)} was deleted."
+  redirect "/"
+end
+
+# Display sign in page
+get "/users/signin" do 
+  erb :signin
+end
+
+# Submits a user/password signin
+post "/users/signin" do
+  session[:username] = params[:username]
+  session[:password] = params[:password]
+  
+  if valid_user?(session[:username], session[:password])
+    session[:signed_in] = true
+    session[:message] = "Welcome!"
+
+    redirect "/"
+  else
+    session[:message] = "Invalid Credentials"
+
+    erb :signin
+  end
+end
+
+# Sign out current user
+post "/users/signout" do 
+  sign_user_out
+  session[:message] = "You have been signed out."
+
   redirect "/"
 end
 

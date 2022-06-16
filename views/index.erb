@@ -1,12 +1,24 @@
-<a href="/new">New Document</a>
-<ul>
-  <% @files.each do |file| %>
-    <li>
-      <a href="/<%= file %>"><%= file %></a>
-      <a href="/<%= file %>/edit">Edit</a>
-      <form class="inline" action="/<%= File.basename(file, '*') %>/delete" method="post">
-        <button id="delete" type="submit">Delete</button>
-      </form>
-    </li>
-  <% end %>
-</ul>
+<% if signed_in? %>
+  <a href="/new">New Document</a>
+  <ul>
+    <% @files.each do |file| %>
+      <li>
+        <a href="/<%= file %>"><%= file %></a>
+        <a href="/<%= file %>/edit">Edit</a>
+        <form class="inline" action="/<%= File.basename(file, '*') %>/delete" method="post">
+          <button id="delete" type="submit">Delete</button>
+        </form>
+      </li>
+    <% end %>
+  </ul>
+  <div>
+    <form action="/users/signout" method="post">
+      <em class="user-status">Signed in as <%= session[:username] %>.</em>
+      <button type="submit">Sign Out</button>
+    </form>
+  </div>
+<% else%>
+  <form action="/users/signin" method="get">
+    <button type="submit">Sign In</button>
+  </form>
+<% end %>
