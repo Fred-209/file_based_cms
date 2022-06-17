@@ -28,21 +28,24 @@ class CmsAppTest < Minitest::Test
   #   end
   # end
 
-  def test_index
-
+  def test_index_signed_in_user
     create_document("history.txt")
     create_document("changes.txt")
     create_document("about.md")
 
-    get "/"
-    response_body = last_response.body
+    post "/users/signin", username: "admin", password: "secret"
 
-    assert_equal 200, last_response.status
+    assert_equal 302, last_response.status
+   
+    get last_response["Location"]
+
     assert_equal "text/html;charset=utf-8", last_response["Content-Type"]
-    assert_includes response_body, "history.txt/edit"
-    assert_includes response_body, 'changes.txt/edit'
-    assert_includes response_body, 'about.md/edit'
-    assert_includes response_body, 'New Document'
+    assert_includes last_response.body, "history.txt/edit"
+    assert_includes last_response.body, 'changes.txt/edit'
+    assert_includes last_response.body, 'about.md/edit'
+    assert_includes last_response.body, 'New Document'
+
+    assert_includes last_response.body, "Signed in as admin"
   end
 
   def test_page_content
@@ -146,5 +149,31 @@ class CmsAppTest < Minitest::Test
     get "/"
 
     refute_includes last_response.body, "some_document.txt"
+  end
+
+  def test_signin_form
+    get "/users/signin"
+
+    assert_equal 200, last_response.status
+    assert_includes last_response.body, "Sign In</button>"
+  end
+
+  def test_signin_with_bad_credentials
+    post "/users/signin", username: "ruh_roh", password: "hacker"
+
+    assert_equal 422, last_response.status
+    assert_includes last_response.body, "Invalid Credentials"
+  end
+
+  def test_signout
+    post "/users/signin", username: "admin", password: "secret"
+    get last_response["Location"]
+    assert_includes last_response.body, "Welcome"
+
+    post "/users/signout"
+    get last_response["Location"]
+
+    assert_includes last_response.body, "You have been signed out"
+    assert_includes last_response.body, "Sign In"
   end
 end
