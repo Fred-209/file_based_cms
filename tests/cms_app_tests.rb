@@ -26,12 +26,16 @@ class CmsAppTest < Minitest::Test
     last_request.env["rack.session"]
   end
 
+  def admin_session
+    { "rack.session" => { username: "admin", password: "secret", signed_in: true } }
+  end
+
   def test_index_signed_in_user
     create_document("history.txt")
     create_document("changes.txt")
     create_document("about.md")
 
-    post "/users/signin", {}, {"rack.session" => {username: "admin", password: "secret"} }
+    post "/users/signin", {}, admin_session
 
     assert_equal 302, last_response.status
    
@@ -58,7 +62,7 @@ class CmsAppTest < Minitest::Test
   end
 
   def test_non_existing_document
-    get "/non_existing_doc.txt", {}, {"rack.session" => {username: "admin", password: "secret"} }
+    get "/non_existing_doc.txt", {},admin_session
     
     
 
@@ -80,22 +84,17 @@ class CmsAppTest < Minitest::Test
   def test_edit_document
     create_document("history.txt", "<textarea")
 
-    get "/history.txt/edit"
+    get "/history.txt/edit", {}, admin_session
 
     assert_equal 200, last_response.status
     assert_includes last_response.body, "<textarea"
   end
 
   def test_update_document
-    create_document("changes.txt")
-
-    post "/changes.txt", content: "new content"
+    post "/changes.txt", {content: "new content"}, admin_session
 
     assert_equal 302, last_response.status
-
-    get last_response['Location']
-
-    assert_includes last_response.body, "changes.txt has been updated"
+    assert_equal "changes.txt has been updated.", session[:message]
 
     get "/changes.txt"
 
@@ -104,7 +103,7 @@ class CmsAppTest < Minitest::Test
   end
 
   def test_create_document_form
-    get "/new"
+    get "/new", {}, admin_session
 
     assert_equal 200, last_response.status
     assert_includes last_response.body, "<input"
@@ -112,7 +111,7 @@ class CmsAppTest < Minitest::Test
   end
 
   def test_submit_new_document
-    post "/create", filename: 'some_new_file.txt'
+    post "/create", {filename: 'some_new_file.txt'}, admin_session
 
     assert_equal 302, last_response.status
     
@@ -123,7 +122,7 @@ class CmsAppTest < Minitest::Test
   end
 
   def test_submit_invalid_document_name
-    post "create", filename: ''
+    post "/create", {filename: ''}, admin_session
 
     assert_equal 422, last_response.status
     assert_includes last_response.body, "A name is required."
@@ -132,7 +131,7 @@ class CmsAppTest < Minitest::Test
   def test_delete_file
     create_document("some_document.txt")
 
-    post "/some_document.txt/delete"
+    post "/some_document.txt/delete", {}, admin_session
 
     assert_equal 302, last_response.status
 

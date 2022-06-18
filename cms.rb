@@ -63,6 +63,13 @@ def sign_user_out
   session[:signed_in] = false
 end
 
+def redirect_if_not_signed_in
+  unless signed_in?
+    session[:message] = "You must be signed into do that."
+    redirect "/"
+  end
+end
+
 # Index page
 get "/" do 
   pattern = File.join(data_path, "*")
@@ -75,12 +82,15 @@ end
 
 # Create a document form
 get "/new" do
+  redirect_if_not_signed_in
 
   erb :new_document
 end
 
 # Submit new document creation
 post "/create" do 
+  redirect_if_not_signed_in
+
   file_name = params[:filename].strip
   
   if valid_file_name?(file_name)
@@ -111,6 +121,7 @@ end
 
  # Edit a file
 get "/:filename/edit" do
+  redirect_if_not_signed_in
   @file_name = params[:filename]
   @file_path = File.join(data_path, @file_name)
   @content =File.read(@file_path)
@@ -121,6 +132,8 @@ end
 
 # Update contents of a file
 post "/:filename" do 
+  redirect_if_not_signed_in
+
   file_path = File.join(data_path, + params[:filename])
   File.write(file_path, params[:content])
 
@@ -130,6 +143,8 @@ end
 
 # Delete a file
 post "/:filename/delete" do 
+  redirect_if_not_signed_in
+
   file_name = File.join(data_path, params[:filename])
   File.delete(file_name)
   
