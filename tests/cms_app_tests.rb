@@ -22,22 +22,20 @@ class CmsAppTest < Minitest::Test
     FileUtils.rm_rf(data_path)
   end
 
-  # def create_document(name, content = "")
-  #   File.open(File.join(data_path, name), "w") do |file|
-  #     file.write(content)
-  #   end
-  # end
+  def session
+    last_request.env["rack.session"]
+  end
 
   def test_index_signed_in_user
     create_document("history.txt")
     create_document("changes.txt")
     create_document("about.md")
 
-    post "/users/signin", username: "admin", password: "secret"
+    post "/users/signin", {}, {"rack.session" => {username: "admin", password: "secret"} }
 
     assert_equal 302, last_response.status
    
-    get last_response["Location"]
+    get last_response["Location"], {}, {"rack.session" => {username: "admin", password: "secret"} }
 
     assert_equal "text/html;charset=utf-8", last_response["Content-Type"]
     assert_includes last_response.body, "history.txt/edit"
@@ -60,18 +58,13 @@ class CmsAppTest < Minitest::Test
   end
 
   def test_non_existing_document
-    get "/non_existing_doc.txt"
+    get "/non_existing_doc.txt", {}, {"rack.session" => {username: "admin", password: "secret"} }
+    
+    
 
     assert_equal 302, last_response.status
     
-    get last_response["Location"]
-
-    assert_equal 200, last_response.status
-    assert_includes last_response.body, "non_existing_doc.txt does not exist."
-  
-    get "/"
-
-    refute_includes last_response.body, "non_existing_doc.txt does not exist."
+    assert_equal "non_existing_doc.txt does not exist.", session[:message]
   end
 
   def test_render_markdown

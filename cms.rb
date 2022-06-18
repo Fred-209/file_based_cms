@@ -144,8 +144,8 @@ end
 
 # Submits a user/password signin
 post "/users/signin" do
-  session[:username] = params[:username]
-  session[:password] = params[:password]
+  session[:username] = params[:username] unless session[:username]
+  session[:password] = params[:password] unless session[:password]
   
   if valid_user?(session[:username], session[:password])
     session[:signed_in] = true
