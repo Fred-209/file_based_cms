@@ -35,11 +35,11 @@ class CmsAppTest < Minitest::Test
     create_document("changes.txt")
     create_document("about.md")
 
-    post "/users/signin", {}, admin_session
+    post "/users/signin", {username: 'admin', password: 'secret' }
 
     assert_equal 302, last_response.status
    
-    get last_response["Location"], {}, {"rack.session" => {username: "admin", password: "secret"} }
+    get last_response["Location"], {}, admin_session
 
     assert_equal "text/html;charset=utf-8", last_response["Content-Type"]
     assert_includes last_response.body, "history.txt/edit"
