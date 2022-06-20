@@ -4,10 +4,11 @@ require "sinatra/content_for"
 require "tilt/erubis"
 require "redcarpet"
 require "yaml"
+require "bcrypt"
 
 root = File.expand_path("..", __FILE__)
 
-USERS = YAML.load_file("./data/users.yml")
+USERS = YAML.load_file('users.yml')
 
 configure do 
   enable :sessions
@@ -18,7 +19,7 @@ def load_user_credentials
   credentials_path = if ENV["RACK_ENV"] == "test"
     File.expand_path("../tests/users.yml", __FILE__)
   else
-    File.expand_path("../data/users.yml", __FILE__)
+    File.expand_path("../users.yml", __FILE__)
   end
   YAML.load_file(credentials_path)
 end
@@ -65,11 +66,14 @@ def signed_in?
   session[:signed_in]
 end
 
-def valid_user?(username, password)
+def valid_credentials?(username, password)
   valid_users = load_user_credentials
 
-  valid_users.each_pair.any? do | valid_user, valid_password |
-    username == valid_user && password == valid_password
+  if valid_users.has_key?(username)
+    user_password = valid_users[username]
+    BCrypt::Password.new(user_password) == password
+  else
+    false
   end
 end
 
@@ -176,7 +180,7 @@ end
 # Submits a user/password signin
 post "/users/signin" do
     
-  if valid_user?(params[:username], params[:password])
+  if valid_credentials?(params[:username], params[:password])
     session[:username] = params[:username] unless session[:username]
     session[:password] = params[:password] unless session[:password]
     session[:signed_in] = true

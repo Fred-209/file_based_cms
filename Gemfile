@@ -6,6 +6,7 @@ gem "erubis"
 gem "webrick"
 gem "redcarpet"
 gem "yaml"
+gem "bcrypt"
 
 gem "minitest"
 gem "rack-test"

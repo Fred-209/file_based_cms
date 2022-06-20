@@ -1,8 +1,9 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    bcrypt (3.1.18)
     erubis (2.7.0)
-    minitest (5.15.0)
+    minitest (5.16.0)
     multi_json (1.15.0)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
@@ -26,11 +27,13 @@ GEM
       tilt (~> 2.0)
     tilt (2.0.10)
     webrick (1.7.0)
+    yaml (0.2.0)
 
 PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  bcrypt
   erubis
   minitest
   rack-test
@@ -38,6 +41,7 @@ DEPENDENCIES
   sinatra
   sinatra-contrib
   webrick
+  yaml
 
 BUNDLED WITH
    2.3.7
